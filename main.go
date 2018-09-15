@@ -116,7 +116,7 @@ func checkOpt(i int, value string) {
 }
 
 func clear() {
-	// cmd := exec.Command("clear") // For MAC
+	// cmd := exec.Command("clear") // For [Linux|MAC]
 	cmd := exec.Command("cmd", "/c", "cls") // For Windows
 	cmd.Stdout = os.Stdout
 	cmd.Run()
