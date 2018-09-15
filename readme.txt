@@ -1,4 +1,4 @@
 USAGE:
 1. You need to compile for the correct platform [Windows|Linux|MacOSX] & [32|64 bits].
-2. Put the binary inside the DOSBox directory to be able to make this tool to work.
+2. Place the compiled binary inside the DOSBox directory where the "dosbox.conf" file is located to be able to make this to work.
 3. Enjoy...
