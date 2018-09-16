@@ -111,7 +111,7 @@ func checkOpt(i int, value string) {
 		fmt.Printf("Stopping DOSBoxRC...\n")
 		time.Sleep(3 * time.Second)
 		clear()
-		os.Exit(1)
+		os.Exit(0)
 	}
 }
 
