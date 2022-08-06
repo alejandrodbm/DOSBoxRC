@@ -108,22 +108,23 @@ func writeFile(path string, lines []string, value string) {
 }
 
 func checkOpt(i int, value string) {
-	if i == 0 {
+	switch i {
+	case 0:
 		clear()
 		menu()
 		fmt.Printf("Invalid Option...")
 		time.Sleep(2 * time.Second)
-	} else if i == 1 {
+	case 1:
 		clear()
 		menu()
 		fmt.Printf("Resolution changed to: %s", value)
 		time.Sleep(2 * time.Second)
-	} else if i == 2 {
+	case 2:
 		clear()
 		menu()
 		fmt.Printf("\"dosbox.conf\" file was not found...")
 		time.Sleep(2 * time.Second)
-	} else if i == 3 {
+	case 3:
 		clear()
 		menu()
 		fmt.Printf("Error creating or modifying the \"dosbox.conf\" file...")
