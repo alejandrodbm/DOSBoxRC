@@ -22,47 +22,40 @@ type config struct {
 func (c *config) setRes(value string) {
 	c.lines = []string{}
 	c.value = value
-	if c.readFile() {
-		c.writeFile()
-	} else {
-		checkOpt(4, "")
-	}
-}
 
-func (c *config) readFile() bool {
-	file, err := os.Open(c.path)
+	f, err := os.Open(c.path)
 	if err != nil {
 		checkOpt(2, "")
-		return false
+		return
 	}
-	defer file.Close()
+	defer f.Close()
 
-	var winResParamExist bool = false
-	scanner := bufio.NewScanner(file)
+	var wrParamExist bool = false
+	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		if strings.Contains(scanner.Text(), "windowresolution=") {
 			c.lines = append(c.lines, "windowresolution="+c.value)
-			winResParamExist = true
+			wrParamExist = true
 		} else {
 			c.lines = append(c.lines, scanner.Text())
 		}
 	}
-	return winResParamExist
-}
+	if !wrParamExist {
+		checkOpt(4, "")
+		return
+	}
 
-func (c *config) writeFile() {
-	file, err := os.Create(c.path)
+	f, err = os.Create(c.path)
 	if err != nil {
 		checkOpt(3, "")
 	}
-	defer file.Close()
+	defer f.Close()
 
-	w := bufio.NewWriter(file)
+	w := bufio.NewWriter(f)
 	for _, v := range c.lines {
 		fmt.Fprintln(w, v)
 	}
 	w.Flush()
-
 	checkOpt(1, c.value)
 }
 
@@ -133,23 +126,23 @@ func checkOpt(i int, value string) {
 		clear()
 		menu()
 		fmt.Printf("\"dosbox.conf\" file was not found...")
-		time.Sleep(2 * time.Second)
+		time.Sleep(3 * time.Second)
 	case 3:
 		clear()
 		menu()
 		fmt.Printf("Error creating or modifying the \"dosbox.conf\" file...")
-		time.Sleep(2 * time.Second)
+		time.Sleep(3 * time.Second)
 	case 4:
 		clear()
 		menu()
 		fmt.Printf("Missing window resolution parameter in \"dosbox.conf\" file...")
-		time.Sleep(2 * time.Second)
+		time.Sleep(3 * time.Second)
 	}
 }
 
 func clear() {
-	// cmd := exec.Command("clear") // For [Linux|MAC]
-	cmd := exec.Command("cmd", "/c", "cls") // For Windows
+	cmd := exec.Command("clear") // For [Linux|MAC]
+	// cmd := exec.Command("cmd", "/c", "cls") // For Windows
 	cmd.Stdout = os.Stdout
 	cmd.Run()
 }
