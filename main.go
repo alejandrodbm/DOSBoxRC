@@ -20,46 +20,50 @@ type config struct {
 }
 
 func (c *config) setRes(value string) {
-	c.value = value
 	c.lines = []string{}
-	c.writeFile(c.readFile())
+	c.value = value
+	if c.readFile() {
+		c.writeFile()
+	} else {
+		checkOpt(4, "")
+	}
 }
 
-func (c *config) readFile() []string {
+func (c *config) readFile() bool {
 	file, err := os.Open(c.path)
 	if err != nil {
 		checkOpt(2, "")
-		return nil
+		return false
 	}
 	defer file.Close()
 
+	var winResParamExist bool = false
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		if strings.Contains(scanner.Text(), "windowresolution=") {
 			c.lines = append(c.lines, "windowresolution="+c.value)
+			winResParamExist = true
 		} else {
 			c.lines = append(c.lines, scanner.Text())
 		}
 	}
-	return c.lines
+	return winResParamExist
 }
 
-func (c *config) writeFile(lines []string) {
-	if lines != nil {
-		file, err := os.Create(c.path)
-		if err != nil {
-			checkOpt(3, "")
-		}
-		defer file.Close()
-
-		w := bufio.NewWriter(file)
-		for _, v := range lines {
-			fmt.Fprintln(w, v)
-		}
-		w.Flush()
-
-		checkOpt(1, c.value)
+func (c *config) writeFile() {
+	file, err := os.Create(c.path)
+	if err != nil {
+		checkOpt(3, "")
 	}
+	defer file.Close()
+
+	w := bufio.NewWriter(file)
+	for _, v := range c.lines {
+		fmt.Fprintln(w, v)
+	}
+	w.Flush()
+
+	checkOpt(1, c.value)
 }
 
 var input config
@@ -134,6 +138,11 @@ func checkOpt(i int, value string) {
 		clear()
 		menu()
 		fmt.Printf("Error creating or modifying the \"dosbox.conf\" file...")
+		time.Sleep(2 * time.Second)
+	case 4:
+		clear()
+		menu()
+		fmt.Printf("Missing window resolution parameter in \"dosbox.conf\" file...")
 		time.Sleep(2 * time.Second)
 	}
 }
