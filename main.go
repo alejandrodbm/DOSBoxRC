@@ -15,15 +15,18 @@ import (
 type config struct {
 	path  string
 	input string
+	value string
+	lines []string
 }
 
 func (c *config) setRes(value string) {
-	c.writeFile(c.path, c.readFile(c.path, value), value)
+	c.value = value
+	c.lines = []string{}
+	c.writeFile(c.readFile())
 }
 
-func (c *config) readFile(path string, value string) []string {
-	var lines []string
-	file, err := os.Open(path)
+func (c *config) readFile() []string {
+	file, err := os.Open(c.path)
 	if err != nil {
 		checkOpt(2, "")
 		return nil
@@ -33,17 +36,17 @@ func (c *config) readFile(path string, value string) []string {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		if strings.Contains(scanner.Text(), "windowresolution=") {
-			lines = append(lines, "windowresolution="+value)
+			c.lines = append(c.lines, "windowresolution="+c.value)
 		} else {
-			lines = append(lines, scanner.Text())
+			c.lines = append(c.lines, scanner.Text())
 		}
 	}
-	return lines
+	return c.lines
 }
 
-func (c *config) writeFile(path string, lines []string, value string) {
+func (c *config) writeFile(lines []string) {
 	if lines != nil {
-		file, err := os.Create(path)
+		file, err := os.Create(c.path)
 		if err != nil {
 			checkOpt(3, "")
 		}
@@ -55,7 +58,7 @@ func (c *config) writeFile(path string, lines []string, value string) {
 		}
 		w.Flush()
 
-		checkOpt(1, value)
+		checkOpt(1, c.value)
 	}
 }
 
