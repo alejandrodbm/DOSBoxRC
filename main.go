@@ -12,42 +12,93 @@ import (
 	"github.com/asaskevich/govalidator"
 )
 
-var lineExist, fileExist bool // To control what to do if "windowresolution=" line exist or not...
+type config struct {
+	path  string
+	input string
+}
+
+func (c *config) setRes(value string) {
+	c.writeFile(c.path, c.readFile(c.path, value), value)
+}
+
+func (c *config) readFile(path string, value string) []string {
+	var lines []string
+	file, err := os.Open(path)
+	if err != nil {
+		checkOpt(2, "")
+		return nil
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		if strings.Contains(scanner.Text(), "windowresolution=") {
+			lines = append(lines, "windowresolution="+value)
+		} else {
+			lines = append(lines, scanner.Text())
+		}
+	}
+	return lines
+}
+
+func (c *config) writeFile(path string, lines []string, value string) {
+	if lines != nil {
+		file, err := os.Create(path)
+		if err != nil {
+			checkOpt(3, "")
+		}
+		defer file.Close()
+
+		w := bufio.NewWriter(file)
+		for _, v := range lines {
+			fmt.Fprintln(w, v)
+		}
+		w.Flush()
+
+		checkOpt(1, value)
+	}
+}
+
+var input config
+
+func init() {
+	input.path = "dosbox.conf"
+}
 
 func main() {
-	var input string
 	for {
 		clear()
 		menu()
 		fmt.Printf("Choose an option: ")
-		_, err := fmt.Scan(&input)
+		_, err := fmt.Scan(&input.input)
 		if err != nil {
 			log.Fatal(err)
 		}
-		if govalidator.IsInt(input) {
-			switch input {
+
+		if govalidator.IsInt(input.input) {
+			switch input.input {
 			case "1":
-				writeFile("dosbox.conf", readFile("dosbox.conf", "640x480"), "640x480")
+				input.setRes("640x480")
 			case "2":
-				writeFile("dosbox.conf", readFile("dosbox.conf", "800x600"), "800x600")
+				input.setRes("800x600")
 			case "3":
-				writeFile("dosbox.conf", readFile("dosbox.conf", "960x720"), "960x720")
+				input.setRes("960x720")
 			case "4":
-				writeFile("dosbox.conf", readFile("dosbox.conf", "1024x768"), "1024x768")
+				input.setRes("1024x768")
 			case "5":
-				writeFile("dosbox.conf", readFile("dosbox.conf", "1280x960"), "1280x960")
+				input.setRes("1280x960")
 			case "6":
-				writeFile("dosbox.conf", readFile("dosbox.conf", "1400x1050"), "1400x1050")
+				input.setRes("1400x1050")
 			case "7":
-				writeFile("dosbox.conf", readFile("dosbox.conf", "1440x1080"), "1440x1080")
+				input.setRes("1440x1080")
 			case "8":
-				writeFile("dosbox.conf", readFile("dosbox.conf", "1600x1200"), "1600x1200")
+				input.setRes("1600x1200")
 			case "9":
-				writeFile("dosbox.conf", readFile("dosbox.conf", "1856x1392"), "1856x1392")
+				input.setRes("1856x1392")
 			case "10":
-				writeFile("dosbox.conf", readFile("dosbox.conf", "1920x1440"), "1920x1440")
+				input.setRes("1920x1440")
 			case "11":
-				writeFile("dosbox.conf", readFile("dosbox.conf", "2048x1536"), "2048x1536")
+				input.setRes("2048x1536")
 			default:
 				checkOpt(0, "")
 				continue
@@ -56,54 +107,6 @@ func main() {
 			checkOpt(0, "")
 			continue
 		}
-	}
-}
-
-func readFile(path string, value string) []string {
-	var lines []string
-	file, err := os.Open(path)
-	if err != nil {
-		fileExist = false
-	} else {
-		fileExist = true
-		lineExist = false
-		scanner := bufio.NewScanner(file)
-		for scanner.Scan() {
-			if strings.Contains(scanner.Text(), "windowresolution=") {
-				lineExist = true
-				lines = append(lines, "windowresolution="+value)
-			} else {
-				lines = append(lines, scanner.Text())
-			}
-		}
-		if lineExist {
-			return lines
-		}
-	}
-	defer file.Close()
-	return nil
-}
-
-func writeFile(path string, lines []string, value string) {
-	if fileExist {
-		if lines != nil {
-			file, err := os.Create(path)
-			if err != nil {
-				checkOpt(3, "")
-			}
-			defer file.Close()
-
-			w := bufio.NewWriter(file)
-			for _, v := range lines {
-				fmt.Fprintln(w, v)
-			}
-			w.Flush()
-			checkOpt(1, value)
-		} else {
-			checkOpt(3, "")
-		}
-	} else {
-		checkOpt(2, "")
 	}
 }
 
